@@ -1,11 +1,29 @@
 services:
-  department-service:
-    image: department-service:v1
+  vti-mysql:
+    image: mysql:8.0
     ports:
-      - '${APP_PORT}:${APP_PORT}'
+      - "3366:3306"
     environment:
-      - APP_PORT=${APP_PORT}
-      - DB_URL=${DB_URL}
-      - DB_USERNAME=${DB_USERNAME}
-      - DB_PASSWORD=${DB_PASSWORD}
-    restart: always
+      MYSQL_USER: keycloak
+      MYSQL_DATABASE: keycloak_final
+      MYSQL_PASSWORD: "123456789"
+      MYSQL_ROOT_PASSWORD: admin
+    volumes:
+      - mysql-keycloak-data:/var/lib/mysql
+    networks:
+      - mysql-keycloak-network
+    healthcheck:
+      test: [ "CMD-SHELL", "mysqladmin ping -h localhost -u root -p$$MYSQL_ROOT_PASSWORD" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    command:
+      - -authentication-policy=mysql_native_password
+
+volumes:
+  mysql-data:
+  mysql-keycloak-data:
+networks:
+  keycloak-network:
+  mysql-keycloak-network:
