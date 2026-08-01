@@ -1,12 +1,12 @@
 eureka:
   client:
     enabled: false
-spring:
-  application:
-    name: department-service
-  datasource:
-    username: root
-    password: admin
-    url: 'jdbc:mysql://127.0.0.1:3366/microservice'
-server:
-  port: 8008
+#spring:
+#  application:
+#    name: department-service
+#  datasource:
+#    username: root
+#    password: admin
+#    url: 'jdbc:mysql://127.0.0.1:3366/microservice'
+#server:
+#  port: 8008
