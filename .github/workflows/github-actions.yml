@@ -36,7 +36,9 @@ jobs:
 
     steps:
       - name: Stop and Remove Existing Containers
+        shell: cmd
         run: docker compose down || true  # Ignore errors if no containers are running
 
       - name: Run with Docker Compose
+        shell: cmd
         run: docker compose up -d
