@@ -5,7 +5,7 @@ on:
       - develop
       - master
       - staging
-      - feature
+      - feature/*
 
 jobs:
   build:
@@ -32,7 +32,7 @@ jobs:
       DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
     runs-on: [self-hosted]
     needs: build
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || github.ref == 'refs/heads/staging' || startsWith(github.ref, 'refs/heads/feature/')
 
     steps:
       - name: Stop and Remove Existing Containers
