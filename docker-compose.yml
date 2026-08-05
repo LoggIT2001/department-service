@@ -9,6 +9,16 @@ services:
       - DB_USERNAME=${DB_USERNAME:-root}
       - DB_PASSWORD=${DB_PASSWORD:-admin}
     restart: always
+  # Load balancer HaProxy
+  haproxy:
+    image: haproxy:alpine
+    container_name: haproxy-lb
+    ports:
+      - "9200:9200"
+      - "1936:1936"
+    volumes:
+      - ./haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
+    restart: always
   vti-mysql:
     image: mysql:8.0
     ports:
