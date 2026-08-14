@@ -1,37 +1,37 @@
 services:
   department-service:
-    image: '${IMAGE_NAME}:${IMAGE_TAG}'
+    image: department-service:v1
     ports:
-      - '${APP_PORT}:${APP_PORT}'
+      - "8082:8082"
     extra_hosts:
       - "host.docker.internal:host-gateway"
     environment:
       - APP_PORT=${APP_PORT:-8082}
-      - DB_URL=${DB_URL:-jdbc:mysql://127.0.0.1:3366/microservice}
+      - DB_URL=${DB_URL:-jdbc:mysql://host.docker.internal:3336/microservice}
       - DB_USERNAME=${DB_USERNAME:-root}
       - DB_PASSWORD=${DB_PASSWORD:-admin}
     restart: always
 
   # Load balancer HaProxy
-  haproxy:
-    image: haproxy:latest
-    container_name: haproxy
-    hostname: haproxy
-    ports:
-      - "9200:9200"
-      - "1936:1936"
-    volumes:
-      - ./haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
-    restart: always
-  es0:
-    image: nginx:latest
-    container_name: es0
-  es1:
-    image: nginx:latest
-    container_name: es1
-  es2:
-    image: nginx:latest
-    container_name: es2
+#  haproxy:
+#    image: haproxy:latest
+#    container_name: haproxy
+#    hostname: haproxy
+#    ports:
+#      - "9200:9200"
+#      - "1936:1936"
+#    volumes:
+#      - ./haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
+#    restart: always
+#  es0:
+#    image: nginx:latest
+#    container_name: es0
+#  es1:
+#    image: nginx:latest
+#    container_name: es1
+#  es2:
+#    image: nginx:latest
+#    container_name: es2
 #  vti-mysql:
 #    image: mysql:8.0
 #    ports:
