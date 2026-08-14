@@ -52,45 +52,45 @@ jobs:
         shell: cmd
         run: docker compose up -d
 
-    deploy-production:
-      runs-on: [self-hosted]
-      needs: build
-      if: github.ref == 'refs/heads/production'
+  deploy-production:
+    runs-on: [self-hosted]
+    needs: build
+    if: github.ref == 'refs/heads/production'
 
-      env:
-        APP_PORT: ${{ secrets.APP_PORT }}
-        DB_URL: ${{ secrets.DB_URL }}
-        DB_USERNAME: ${{ secrets.DB_USERNAME }}
-        DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+    env:
+      APP_PORT: ${{ secrets.APP_PORT }}
+      DB_URL: ${{ secrets.DB_URL }}
+      DB_USERNAME: ${{ secrets.DB_USERNAME }}
+      DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
 
-      steps:
-        - name: checkout code
-          uses: actions/checkout@v3
+    steps:
+      - name: checkout code
+        uses: actions/checkout@v3
 
-        - name: Load image into Minikube
-          run: |
-            minikube image load $IMAGE_NAME:$IMAGE_TAG
+      - name: Load image into Minikube
+        run: |
+          minikube image load $IMAGE_NAME:$IMAGE_TAG
 
-        - name: Create or update Kubernetes secret
-          run: |
-            kubectl create secret generic department-service-secret \
-              --from-literal=APP_PORT="$APP_PORT" \
-              --from-literal=DB_URL="$DB_URL" \
-              --from-literal=DB_USERNAME="$DB_USERNAME" \
-              --from-literal=DB_PASSWORD="$DB_PASSWORD" \
-              --dry-run=client -o yaml | kubectl apply -f -
+      - name: Create or update Kubernetes secret
+        run: |
+          kubectl create secret generic department-service-secret \
+            --from-literal=APP_PORT="$APP_PORT" \
+            --from-literal=DB_URL="$DB_URL" \
+            --from-literal=DB_USERNAME="$DB_USERNAME" \
+            --from-literal=DB_PASSWORD="$DB_PASSWORD" \
+            --dry-run=client -o yaml | kubectl apply -f -
 
-        - name: Render Kubernetes manifests
-          run: |
-            envsubst < k8s/deployment.yaml > k8s/deployment-rendered.yaml
-            envsubst < k8s/service.yaml > k8s/service-rendered.yaml
+      - name: Render Kubernetes manifests
+        run: |
+          envsubst < k8s/deployment.yaml > k8s/deployment-rendered.yaml
+          envsubst < k8s/service.yaml > k8s/service-rendered.yaml
 
-        - name: Deploy to Minikube
-          run: |
-            kubectl apply -f k8s/deployment-rendered.yaml
-            kubectl apply -f k8s/service-rendered.yaml
+      - name: Deploy to Minikube
+        run: |
+          kubectl apply -f k8s/deployment-rendered.yaml
+          kubectl apply -f k8s/service-rendered.yaml
 
-        - name: Restart deployment
-          run: |
-            kubectl rollout restart deployment/department-service
-            kubectl rollout status deployment/department-service
+      - name: Restart deployment
+        run: |
+          kubectl rollout restart deployment/department-service
+          kubectl rollout status deployment/department-service
