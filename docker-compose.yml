@@ -3,47 +3,60 @@ services:
     image: department-service:v1
     ports:
       - '${APP_PORT:-8082}:${APP_PORT:-8082}'
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     environment:
       - APP_PORT=${APP_PORT:-8082}
       - DB_URL=${DB_URL:-jdbc:mysql://127.0.0.1:3366/microservice}
       - DB_USERNAME=${DB_USERNAME:-root}
       - DB_PASSWORD=${DB_PASSWORD:-admin}
     restart: always
+
   # Load balancer HaProxy
   haproxy:
-    image: haproxy:alpine
-    container_name: haproxy-lb
+    image: haproxy:latest
+    container_name: haproxy
+    hostname: haproxy
     ports:
       - "9200:9200"
       - "1936:1936"
     volumes:
       - ./haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
     restart: always
-  vti-mysql:
-    image: mysql:8.0
-    ports:
-      - "3366:3306"
-    environment:
-      MYSQL_USER: keycloak
-      MYSQL_DATABASE: keycloak_final
-      MYSQL_PASSWORD: "123456789"
-      MYSQL_ROOT_PASSWORD: admin
-    volumes:
-      - mysql-keycloak-data:/var/lib/mysql
-    networks:
-      - mysql-keycloak-network
-    healthcheck:
-      test: [ "CMD-SHELL", "mysqladmin ping -h localhost -u root -p$$MYSQL_ROOT_PASSWORD" ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 30s
-    command:
-      - -authentication-policy=mysql_native_password
+  es0:
+    image: nginx:latest
+    container_name: es0
+  es1:
+    image: nginx:latest
+    container_name: es1
+  es2:
+    image: nginx:latest
+    container_name: es2
+#  vti-mysql:
+#    image: mysql:8.0
+#    ports:
+#      - "3366:3306"
+#    environment:
+#      MYSQL_USER: keycloak
+#      MYSQL_DATABASE: keycloak_final
+#      MYSQL_PASSWORD: "123456789"
+#      MYSQL_ROOT_PASSWORD: admin
+#    volumes:
+#      - mysql-keycloak-data:/var/lib/mysql
+#    networks:
+#      - mysql-keycloak-network
+#    healthcheck:
+#      test: [ "CMD-SHELL", "mysqladmin ping -h localhost -u root -p$$MYSQL_ROOT_PASSWORD" ]
+#      interval: 10s
+#      timeout: 5s
+#      retries: 5
+#      start_period: 30s
+#    command:
+#      - -authentication-policy=mysql_native_password
 
-volumes:
-  mysql-data:
-  mysql-keycloak-data:
-networks:
-  keycloak-network:
-  mysql-keycloak-network:
+#volumes:
+#  mysql-data:
+#  mysql-keycloak-data:
+#networks:
+#  keycloak-network:
+#  mysql-keycloak-network:
