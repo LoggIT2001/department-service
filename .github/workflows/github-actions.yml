@@ -6,6 +6,11 @@ on:
       - master
       - staging
       - feature/*
+      - production
+
+env:
+  IMAGE_NAME: department-service
+  IMAGE_TAG: ${{ github.sha }}
 
 jobs:
   build:
@@ -21,20 +26,24 @@ jobs:
 
       - name: Build and tag Docker image
         run: |
-          docker build -t department-service:v1 .
+          docker build -t $IMAGE_NAME:$IMAGE_TAG .
 
 
-  deploy:
+  deploy-develop:
+    runs-on: [self-hosted]
+    needs: build
+    if: github.ref == 'refs/heads/develop'
+
     env:
       APP_PORT: ${{ secrets.APP_PORT }}
       DB_URL: ${{ secrets.DB_URL }}
       DB_USERNAME: ${{ secrets.DB_USERNAME }}
       DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-    runs-on: [self-hosted]
-    needs: build
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || github.ref == 'refs/heads/staging' || startsWith(github.ref, 'refs/heads/feature/')
 
     steps:
+      - name: checkout code
+        uses: actions/checkout@v3
+
       - name: Stop and Remove Existing Containers
         shell: cmd
         run: docker compose down || true  # Ignore errors if no containers are running
@@ -42,3 +51,46 @@ jobs:
       - name: Run with Docker Compose
         shell: cmd
         run: docker compose up -d
+
+    deploy-production:
+      runs-on: [self-hosted]
+      needs: build
+      if: github.ref == 'refs/heads/production'
+
+      env:
+        APP_PORT: ${{ secrets.APP_PORT }}
+        DB_URL: ${{ secrets.DB_URL }}
+        DB_USERNAME: ${{ secrets.DB_USERNAME }}
+        DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+
+      steps:
+        - name: checkout code
+          uses: actions/checkout@v3
+
+        - name: Load image into Minikube
+          run: |
+            minikube image load $IMAGE_NAME:$IMAGE_TAG
+
+        - name: Create or update Kubernetes secret
+          run: |
+            kubectl create secret generic department-service-secret \
+              --from-literal=APP_PORT="$APP_PORT" \
+              --from-literal=DB_URL="$DB_URL" \
+              --from-literal=DB_USERNAME="$DB_USERNAME" \
+              --from-literal=DB_PASSWORD="$DB_PASSWORD" \
+              --dry-run=client -o yaml | kubectl apply -f -
+
+        - name: Render Kubernetes manifests
+          run: |
+            envsubst < k8s/deployment.yaml > k8s/deployment-rendered.yaml
+            envsubst < k8s/service.yaml > k8s/service-rendered.yaml
+
+        - name: Deploy to Minikube
+          run: |
+            kubectl apply -f k8s/deployment-rendered.yaml
+            kubectl apply -f k8s/service-rendered.yaml
+
+        - name: Restart deployment
+          run: |
+            kubectl rollout restart deployment/department-service
+            kubectl rollout status deployment/department-service
