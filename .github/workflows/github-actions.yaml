@@ -86,7 +86,7 @@ jobs:
         run: |
           kubectl create secret generic department-service-secret ^
             --from-literal=APP_PORT="${{secrets.APP_PORT}}" ^
-            --from-literal=DB_URL="${{ secrets.DB_URL }}" ^
+            --from-literal=DB_URL="${{ secrets.DB_URL_PRODUCTION }}" ^
             --from-literal=DB_USERNAME="${{ secrets.DB_USERNAME }}" ^
             --from-literal=DB_PASSWORD="${{ secrets.DB_PASSWORD }}" ^
             --dry-run=client -o yaml | kubectl apply -f -
@@ -103,10 +103,10 @@ jobs:
 #          envsubst < k8s/deployment.yaml > k8s/deployment-rendered.yaml
 #          envsubst < k8s/service.yaml > k8s/service-rendered.yaml
 
-      - name: Deploy Mysql External Service
-        shell: cmd
-        run: |
-            kubectl apply -f k8s/mysql-external-service.yaml
+#      - name: Deploy Mysql External Service
+#        shell: cmd
+#        run: |
+#            kubectl apply -f k8s/mysql-external-service.yaml
 
       - name: Deploy to Minikube
         run: |
