@@ -94,8 +94,14 @@ jobs:
       - name: Render Kubernetes manifests
         shell: powershell
         run: |
-          envsubst < k8s/deployment.yaml > k8s/deployment-rendered.yaml
-          envsubst < k8s/service.yaml > k8s/service-rendered.yaml
+          (Get-Content k8s/deployment.yaml -Raw) `
+            -replace '\$\{IMAGE_NAME\}', '${{ env.IMAGE_NAME }}' `
+            -replace '\$\{IMAGE_TAG\}', '${{ env.IMAGE_TAG }}' | `
+            Set-Content k8s/deployment-rendered.yaml
+          (Get-Content k8s/service.yaml -Raw) | `
+            Set-Content k8s/service-rendered.yaml
+#          envsubst < k8s/deployment.yaml > k8s/deployment-rendered.yaml
+#          envsubst < k8s/service.yaml > k8s/service-rendered.yaml
 
       - name: Deploy to Minikube
         run: |
