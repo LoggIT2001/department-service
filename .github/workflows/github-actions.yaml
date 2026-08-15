@@ -82,15 +82,17 @@ jobs:
           minikube image load ${env:IMAGE_NAME}:${env:IMAGE_TAG}
 
       - name: Create or update Kubernetes secret
+        shell: cmd
         run: |
-          kubectl create secret generic department-service-secret \
-            --from-literal=APP_PORT="$APP_PORT" \
-            --from-literal=DB_URL="$DB_URL" \
-            --from-literal=DB_USERNAME="$DB_USERNAME" \
-            --from-literal=DB_PASSWORD="$DB_PASSWORD" \
+          kubectl create secret generic department-service-secret ^
+            --from-literal=APP_PORT="$APP_PORT" ^
+            --from-literal=DB_URL="$DB_URL" ^
+            --from-literal=DB_USERNAME="$DB_USERNAME" ^
+            --from-literal=DB_PASSWORD="$DB_PASSWORD" ^
             --dry-run=client -o yaml | kubectl apply -f -
 
       - name: Render Kubernetes manifests
+        shell: powershell
         run: |
           envsubst < k8s/deployment.yaml > k8s/deployment-rendered.yaml
           envsubst < k8s/service.yaml > k8s/service-rendered.yaml
