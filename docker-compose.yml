@@ -2,7 +2,7 @@ services:
   department-service:
     image: department-service:v1
     ports:
-      - "8088:8088"
+      - "8082:8082"
     extra_hosts:
       - "host.docker.internal:host-gateway"
     environment:
