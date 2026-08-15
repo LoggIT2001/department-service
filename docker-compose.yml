@@ -2,15 +2,17 @@ services:
   department-service:
     image: department-service:v1
     ports:
-      - "8082:8082"
+      - "8088:8088"
     extra_hosts:
       - "host.docker.internal:host-gateway"
     environment:
       - APP_PORT=${APP_PORT:-8082}
-      - DB_URL=${DB_URL:-jdbc:mysql://host.docker.internal:3336/microservice}
+      - DB_URL=${DB_URL:-jdbc:mysql://demo-vti-mysql-1:3306/microservice?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC}
       - DB_USERNAME=${DB_USERNAME:-root}
       - DB_PASSWORD=${DB_PASSWORD:-admin}
     restart: always
+    networks:
+        - demo_mysql-network
 
   # Load balancer HaProxy
 #  haproxy:
@@ -57,6 +59,6 @@ services:
 #volumes:
 #  mysql-data:
 #  mysql-keycloak-data:
-#networks:
-#  keycloak-network:
-#  mysql-keycloak-network:
+networks:
+  demo_mysql-network:
+    external: true
