@@ -17,7 +17,7 @@ spec:
           image: ${IMAGE_NAME}:${IMAGE_TAG}
           imagePullPolicy: Never
           ports:
-            - containerPort: ${APP_PORT}
+            - containerPort: 8082
           envFrom:
             - secretRef:
                 name: department-service-secret
