@@ -7,6 +7,6 @@ spec:
   selector:
     app: department-service
   ports:
-    - port: ${APP_PORT}
-      targetPort: ${APP_PORT}
+    - port: 8082
+      targetPort: 8082
       nodePort: 30082
